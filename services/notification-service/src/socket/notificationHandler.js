@@ -84,33 +84,36 @@ module.exports = async (io) => {
       const event = JSON.parse(message);
       console.log("Redis eventi alındı:", event.type);
 
-      if (event.type === "new_message") {
-        const { recipientId, senderId, content, conversationId } = event.data;
+      if (event.type === 'new_message') {
+        const { recipientId, senderId, senderUsername, content, conversationId } = event.data
 
         // Bildirimi kaydet
         const notification = await Notification.create({
           recipient: recipientId,
           sender: senderId,
-          type: "new_message",
-          content: `Yeni mesaj: ${content.substring(0, 50)}`,
-          metadata: { conversationId },
-        });
+          type: 'new_message',
+          content,
+          metadata: { conversationId, senderUsername, preview: content.substring(0, 50) }
+        })
 
         // Kullanıcı online ise socket ile bildir
-        io.to(recipientId).emit("notification:new", notification);
+        io.to(recipientId).emit('notification:new', notification)
       }
 
-      if (event.type === "user_online" || event.type === "user_offline") {
-        const { userId, isOnline } = event.data;
+      if (event.type === 'new_message') {
+        const { recipientId, senderId, senderUsername, content, conversationId } = event.data
 
+        // Bildirimi kaydet
         const notification = await Notification.create({
-          recipient: userId,
-          type: isOnline ? "user_online" : "user_offline",
-          content: isOnline ? "Çevrimiçi oldunuz" : "Çevrimdışı oldunuz",
-          metadata: { userId },
-        });
+          recipient: recipientId,
+          sender: senderId,
+          type: 'new_message',
+          content,
+          metadata: { conversationId, senderUsername, preview: content.substring(0, 50) }
+        })
 
-        io.to(userId).emit("notification:new", notification);
+        // Kullanıcı online ise socket ile bildir
+        io.to(recipientId).emit('notification:new', notification)
       }
     } catch (error) {
       console.error("Redis event işleme hatası:", error);

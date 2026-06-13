@@ -50,7 +50,7 @@ module.exports = (io) => {
     // Mesaj gönder
     socket.on('message:send', async (data) => {
       try {
-        const { conversationId, content } = data
+        const { conversationId, content, senderUsername } = data
 
         // Konuşma var mı kontrol et
         const conversation = await Conversation.findById(conversationId)
@@ -93,6 +93,7 @@ if (publisher) {
         data: {
           recipientId: pid,
           senderId: userId,
+          senderUsername: senderUsername || 'Bilinmeyen',
           content,
           conversationId
         }
